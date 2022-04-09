@@ -15,7 +15,12 @@ public class YoutubeController {
      * 提交新视频
      */
     @PostMapping("submitMission")
-    public JSONObject submitMission(@RequestParam("youtubeUrl") String youtubeUrl) {
-        return youtubeService.submitMission(youtubeUrl);
+    public JSONObject submitMission(@RequestBody JSONObject body) {
+        return youtubeService.submitMission(body);
+    }
+
+    @GetMapping("getVideoInfo")
+    public JSONObject getVideoInfo(@RequestParam String youtubeVideoId) {
+        return youtubeService.getVideoInfo(youtubeVideoId);
     }
 }
