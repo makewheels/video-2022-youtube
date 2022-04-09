@@ -1,8 +1,10 @@
 package com.github.makewheels.video2022youtube;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RuntimeUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -40,70 +42,44 @@ public class YoutubeService {
         }
     }
 
-    public void download(String youtubeUrl) {
-        new Thread(() -> {
-            //获取视频文件信息
-            String getFilenameCmd = "yt-dlp --get-filename -o '%(title)s.%(ext)s' "
-                    + "--restrict-filenames " + youtubeUrl;
-            log.info("getFilenameCmd = " + getFilenameCmd);
-            String filename = RuntimeUtil.execForStr(getFilenameCmd);
-            log.info("filename before = " + filename);
-            filename = filename.replace("'", "");
-            filename = filename.replace("+", "_");
-            filename = filename.replace("%", "_");
-            filename = filename.replace("#", "_");
-            filename = filename.replace("&", "_");
-            filename = filename.replace("\"", "_");
-            filename = filename.replace("<", "_");
-            filename = filename.replace(">", "_");
-            filename = filename.replace("~", "_");
-            filename = filename.replace("^", "_");
-            filename = filename.replace("!", "_");
-            filename = filename.replace("@", "_");
-            filename = filename.replace("$", "_");
-            filename = filename.replace("*", "_");
-            filename = filename.replace("`", "_");
-            filename = filename.replace("(", "_");
-            filename = filename.replace(")", "_");
-            filename = filename.replace(" ", "_");
-            filename = filename.replace("\n", "");
-            filename = filename.replace("\r", "");
-            log.info("filename after = " + filename);
+    /**
+     * 根据视频id获取下载文件后缀
+     *
+     * @param youtubeVideoId
+     * @return
+     */
+    private String getFileExtension(String youtubeVideoId) {
+        String getFilenameCmd = "yt-dlp --get-filename -o '%(ext)s' "
+                + "--restrict-filenames " + youtubeVideoId;
+        log.info("getFilenameCmd = " + getFilenameCmd);
+        return RuntimeUtil.execForStr(getFilenameCmd);
+    }
 
-            String workId = IdUtil.randomUUID();
-            //下载视频
-            File webmFile = new File(youtubeWorkDir, workId + "/" + filename);
-            log.info("webmFile = " + webmFile);
-            String downloadCmd = "yt-dlp -S height:1080 -o " + webmFile.getAbsolutePath() + " " + youtubeUrl;
-            log.info("downloadCmd = " + downloadCmd);
-            executeAndPrint(downloadCmd);
+    /**
+     * 下载
+     *
+     * @param missionId
+     * @param youtubeVideoId
+     * @param uploadKey
+     */
+    private void download(String missionId, String youtubeVideoId, String uploadKey) {
+        //拿文件拓展名
+        String extension = getFileExtension(youtubeVideoId);
+        //下载视频
+        File webmFile = new File(youtubeWorkDir, missionId + "/" + youtubeVideoId + "." + extension);
+        log.info("webmFile = " + webmFile.getAbsolutePath());
+        String downloadCmd = "yt-dlp -S height:1080 -o " + webmFile.getAbsolutePath() + " " + youtubeVideoId;
+        log.info("downloadCmd = " + downloadCmd);
+        executeAndPrint(downloadCmd);
 
-            //上传对象存储
-            log.info("开始上传对象存储");
-            long start = System.currentTimeMillis();
+        log.info("开始上传对象存储");
 
-//            String base = BaiduCloudUtil.getObjectStoragePrefix(videoId);
-//            String key = base + videoId + "." + FilenameUtils.getExtension(webmFile.getName());
-//            log.info("key = " + key);
-//            String playFileUrl = BaiduCloudUtil.uploadObjectStorage(webmFile, key);
+        log.info("上传对象存储完成");
 
-            log.info("上传对象存储完成");
-//            log.info("playFileUrl = " + playFileUrl);
-            long end = System.currentTimeMillis();
-            long time = end - start;
-            long fileLength = webmFile.length();
-            long speedPerSecond = fileLength / time * 1000;
-            String readable = FileUtil.readableFileSize(speedPerSecond);
-            log.info("上传对象存储速度:  " + readable + "/s");
+        log.info("通知国内服务器");
 
-            //通知
-            log.info("通知国内服务器");
+        //删除本地下载的文件
 
-            //删除本地下载的文件
-//            log.info("FileUtil.del(new File(workDir, videoId)) = "
-//                    + FileUtil.del(new File(workDir, videoId)));
-
-        }).start();
     }
 
     /**
@@ -111,16 +87,18 @@ public class YoutubeService {
      */
     public JSONObject submitMission(JSONObject body) {
         String missionId = body.getString("missionId");
-        String youtubeUrl = body.getString("youtubeUrl");
+        String youtubeVideoId = body.getString("youtubeVideoId");
         String uploadKey = body.getString("uploadKey");
-
+        //开始下载
+        new Thread(() -> download(missionId, youtubeVideoId, uploadKey)).start();
         //提前先返回播放地址
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("youtubeUrl", youtubeUrl);
+        jsonObject.put("missionId", missionId);
+        jsonObject.put("youtubeVideoId", youtubeVideoId);
         return jsonObject;
     }
 
-    public static YouTube getService() {
+    private YouTube getService() {
         NetHttpTransport httpTransport = null;
         try {
             httpTransport = GoogleNetHttpTransport.newTrustedTransport();
@@ -143,7 +121,7 @@ public class YoutubeService {
                     .list(Lists.newArrayList("snippet", "contentDetails", "statistics"))
                     .setId(idList).setKey("AIzaSyA4x7iV1uzQqWnoiADcHikWshx01tvZEtg");
             VideoListResponse response = request.execute();
-            response.getItems().get(0);
+            return JSONObject.parseObject(JSON.toJSONString(response.getItems().get(0)));
         } catch (IOException e) {
             e.printStackTrace();
         }
