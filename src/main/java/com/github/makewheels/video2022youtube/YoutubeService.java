@@ -49,7 +49,7 @@ public class YoutubeService {
      * @return
      */
     private String getFileExtension(String youtubeVideoId) {
-        String getFilenameCmd = "yt-dlp --get-filename -o '%(ext)s' "
+        String getFilenameCmd = "yt-dlp --get-filename -o %(ext)s "
                 + "--restrict-filenames " + youtubeVideoId;
         log.info("getFilenameCmd = " + getFilenameCmd);
         return RuntimeUtil.execForStr(getFilenameCmd);
