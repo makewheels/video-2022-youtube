@@ -120,7 +120,7 @@ public class YoutubeService {
     /**
      * 获取视频信息
      *
-     * @param youtubeId
+     * @param youtubeVideoId
      * @return
      */
     public JSONObject getVideoInfo(String youtubeVideoId) {
