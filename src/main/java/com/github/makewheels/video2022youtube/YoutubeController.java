@@ -11,9 +11,14 @@ public class YoutubeController {
     @Resource
     private YoutubeService youtubeService;
 
-    /**
-     * 提交新视频
-     */
+    @PostMapping("getFileExtension")
+    public JSONObject getFileExtension(@RequestParam String youtubeVideoId) {
+        String extension = youtubeService.getFileExtension(youtubeVideoId);
+        JSONObject response = new JSONObject();
+        response.put("extension", extension);
+        return response;
+    }
+
     @PostMapping("submitMission")
     public JSONObject submitMission(@RequestBody JSONObject body) {
         return youtubeService.submitMission(body);

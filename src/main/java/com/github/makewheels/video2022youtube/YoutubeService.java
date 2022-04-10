@@ -1,8 +1,6 @@
 package com.github.makewheels.video2022youtube;
 
-import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.file.FileNameUtil;
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RuntimeUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -10,7 +8,6 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
-import com.google.api.services.youtube.model.Video;
 import com.google.api.services.youtube.model.VideoListResponse;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
@@ -48,7 +45,7 @@ public class YoutubeService {
      * @param youtubeVideoId
      * @return
      */
-    private String getFileExtension(String youtubeVideoId) {
+    public String getFileExtension(String youtubeVideoId) {
         String getFilenameCmd = "yt-dlp --get-filename -o %(ext)s "
                 + "--restrict-filenames " + youtubeVideoId;
         log.info("getFilenameCmd = " + getFilenameCmd);
@@ -64,7 +61,7 @@ public class YoutubeService {
      */
     private void download(String missionId, String youtubeVideoId, String uploadKey) {
         //拿文件拓展名
-        String extension = getFileExtension(youtubeVideoId);
+        String extension = FileNameUtil.extName(uploadKey);
         //下载视频
         File webmFile = new File(youtubeWorkDir, missionId + "/" + youtubeVideoId + "." + extension);
         log.info("webmFile = " + webmFile.getAbsolutePath());
@@ -73,12 +70,15 @@ public class YoutubeService {
         executeAndPrint(downloadCmd);
 
         log.info("开始上传对象存储");
+        log.info(uploadKey);
 
         log.info("上传对象存储完成");
 
         log.info("通知国内服务器");
 
-        //删除本地下载的文件
+        //删除本地文件
+        webmFile.delete();
+        webmFile.getParentFile().delete();
 
     }
 
