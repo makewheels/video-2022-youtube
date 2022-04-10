@@ -81,8 +81,8 @@ public class YoutubeService {
         log.info("通知国内服务器");
 
         //删除本地文件
-        webmFile.delete();
-        webmFile.getParentFile().delete();
+//        webmFile.delete();
+//        webmFile.getParentFile().delete();
 
     }
 
@@ -90,8 +90,7 @@ public class YoutubeService {
      * 提交搬运任务
      */
     public JSONObject submitMission(JSONObject body) {
-        log.info("收到搬运任务：");
-        log.info(body.toJSONString());
+        log.info("收到搬运任务：" + body.toJSONString());
         String missionId = body.getString("missionId");
         String youtubeVideoId = body.getString("youtubeVideoId");
         String uploadKey = body.getString("uploadKey");
