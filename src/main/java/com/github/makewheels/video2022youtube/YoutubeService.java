@@ -49,7 +49,11 @@ public class YoutubeService {
         String getFilenameCmd = "yt-dlp --get-filename -o %(ext)s "
                 + "--restrict-filenames " + youtubeVideoId;
         log.info("getFilenameCmd = " + getFilenameCmd);
-        return RuntimeUtil.execForStr(getFilenameCmd);
+        String result = RuntimeUtil.execForStr(getFilenameCmd);
+        if (result.endsWith("\n")) {
+            result = result.replace("\n", "");
+        }
+        return result;
     }
 
     /**

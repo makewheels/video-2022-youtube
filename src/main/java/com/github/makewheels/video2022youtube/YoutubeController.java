@@ -11,7 +11,7 @@ public class YoutubeController {
     @Resource
     private YoutubeService youtubeService;
 
-    @PostMapping("getFileExtension")
+    @GetMapping("getFileExtension")
     public JSONObject getFileExtension(@RequestParam String youtubeVideoId) {
         String extension = youtubeService.getFileExtension(youtubeVideoId);
         JSONObject response = new JSONObject();
