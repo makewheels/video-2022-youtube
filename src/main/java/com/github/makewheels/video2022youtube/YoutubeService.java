@@ -87,13 +87,16 @@ public class YoutubeService {
     }
 
     /**
-     * 提交新视频任务
+     * 提交搬运任务
      */
     public JSONObject submitMission(JSONObject body) {
+        log.info("收到搬运任务：");
+        log.info(body.toJSONString());
         String missionId = body.getString("missionId");
         String youtubeVideoId = body.getString("youtubeVideoId");
         String uploadKey = body.getString("uploadKey");
         //开始下载
+        log.info("开始下载: youtubeVideoId = " + youtubeVideoId);
         new Thread(() -> download(missionId, youtubeVideoId, uploadKey)).start();
         //提前先返回播放地址
         JSONObject jsonObject = new JSONObject();
@@ -115,9 +118,15 @@ public class YoutubeService {
                 .build();
     }
 
-    public JSONObject getVideoInfo(String youtubeVideoId) {
+    /**
+     * 获取视频信息
+     *
+     * @param youtubeId
+     * @return
+     */
+    public JSONObject getVideoInfo(String youtubeId) {
         List<String> idList = new ArrayList<>();
-        idList.add(youtubeVideoId);
+        idList.add(youtubeId);
         YouTube youTube = getService();
         if (youTube == null) return null;
         try {
