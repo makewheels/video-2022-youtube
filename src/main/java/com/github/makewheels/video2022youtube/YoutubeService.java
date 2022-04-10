@@ -123,9 +123,9 @@ public class YoutubeService {
      * @param youtubeId
      * @return
      */
-    public JSONObject getVideoInfo(String youtubeId) {
+    public JSONObject getVideoInfo(String youtubeVideoId) {
         List<String> idList = new ArrayList<>();
-        idList.add(youtubeId);
+        idList.add(youtubeVideoId);
         YouTube youTube = getService();
         if (youTube == null) return null;
         try {
