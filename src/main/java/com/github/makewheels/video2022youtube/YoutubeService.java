@@ -82,6 +82,7 @@ public class YoutubeService {
 
         //调国内服务器接口，获取上传凭证
         String uploadCredentialsJson = HttpUtil.get(body.getString("getUploadCredentialsUrl"));
+        log.info("上传凭证：" + uploadCredentialsJson);
         JSONObject uploadCredentials = JSONObject.parseObject(uploadCredentialsJson);
 
         //判断provider，上传到对象存储
