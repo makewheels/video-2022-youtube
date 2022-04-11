@@ -42,8 +42,6 @@ public class AliyunOssService {
         // 返回uploadId，它是分片上传事件的唯一标识。您可以根据该uploadId发起相关的操作，例如取消分片上传、查询分片上传等。
         String uploadId = uploadResult.getUploadId();
 
-        // partETags是PartETag的集合。PartETag由分片的ETag和分片号组成。
-        List<PartETag> partETags = new ArrayList<>();
         // 每个分片的大小，用于计算文件有多少个分片。单位为字节。
         long partSize = 1024 * 1024L;
 
@@ -51,6 +49,12 @@ public class AliyunOssService {
         int partCount = (int) (fileLength / partSize);
         if (fileLength % partSize != 0) {
             partCount++;
+        }
+        System.out.println(partCount);
+        // partETags是PartETag的集合。PartETag由分片的ETag和分片号组成。
+        List<PartETag> partETags = new ArrayList<>(partCount);
+        for (int i = 0; i < partCount; i++) {
+            partETags.add(null);
         }
         // 遍历分片上传。
         for (int i = 0; i < partCount; i++) {
@@ -93,6 +97,25 @@ public class AliyunOssService {
         log.info(completeMultipartUploadResult.getETag());
 
         log.info("上传对象存储完成");
+    }
+
+    public static void main(String[] args) {
+        JSONObject jsonObject = JSONObject.parseObject("{\"bucket\":\"video-2022-dev\",\"accessKeyId\":" +
+                "\"STS.NStCwvm5iTDtqNc2M5hb84GQA\",\"endpoint\":\"oss-cn-beijing.aliyuncs.com\"" +
+                ",\"secretKey\":\"3CpvSmDCMU3dW57eHAe7RhKdGfET6ALY9EyQywnv8HkT\",\"provider\":" +
+                "\"ALIYUN\",\"sessionToken\":\"CAISogJ1q6Ft5B2yfSjIr5DBCM3CgOpI44afc2jS1k1gZO0U24L" +
+                "6ozz2IH9LeHVhB+4WsPQ0lW1U6vwdlplpTJtIfkHfdsp36LJe9A7kbtud4pe44OwO0Mb7RTnDVU+qjZ" +
+                "aPaujyQo2GcPr8OgicIovnaVKiJ1uYRFWAHcCjq/wON6Y6PGSRaT5BG60lRG9Lo9MbMn38LOukNgWQ" +
+                "7EPbEEtvvHgX6wo9k9PdpPeR8R3Dllb35/YIroDqWPieYtJrIY10XqXevoU0VNKYjncAtEgWrvcu3PMY" +
+                "p2qXhLzHXQkNuSfhGvHP79hiIDV+YqUHAKNepJD+76Yn5bCPxtqpm0gdZrAID3iFG5rb2szAFaau" +
+                "Lc18a7f3NnOIiIjVbIk/RvX84JKDXhqAAU2V/apWGLZbEt7z4/MGKgivHVUSi7zOfhSipmeGvgf+" +
+                "+2JEkYz/4y53geItQZ3QcQRUpz3s1M6yrF5IyFHugG0yYAC+sKMTOk+yvQoJGSWZVCCDEXcJrCk6NE" +
+                "zyKwJ8ODTVN/4UVfaAggujuN1pipd14AFhdNhhRpb9Kgv1UPPm\",\"expiration\":\"" +
+                "2022-04-11T10:15:36Z\",\"key\":\"videos/6231de9a5bffa00422da71ce/" +
+                "6253d4a3e6181b5c6c3d8cfb/original/6253d4a3e6181b5c6c3d8cfb.webm\"}");
+
+        new AliyunOssService().upload(new File("C:\\Users\\thedoflin\\Downloads\\test.mp4"),
+                jsonObject);
     }
 
 }
