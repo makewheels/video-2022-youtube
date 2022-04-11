@@ -66,13 +66,15 @@ public class YoutubeService {
      */
     private void download(JSONObject body) {
         String missionId = body.getString("missionId");
+        String provider = body.getString("provider");
         String videoId = body.getString("videoId");
         String youtubeVideoId = body.getString("youtubeVideoId");
         String key = body.getString("key");
         //拿文件拓展名
         String extension = FileNameUtil.extName(key);
         //下载视频
-        File file = new File(youtubeWorkDir, missionId + "/" + youtubeVideoId + "." + extension);
+        File file = new File(youtubeWorkDir, missionId + "-" + videoId + "/"
+                + youtubeVideoId + "." + extension);
         log.info("webmFile = " + file.getAbsolutePath());
         String downloadCmd = "yt-dlp -S height:1080 -o " + file.getAbsolutePath() + " " + youtubeVideoId;
         log.info("downloadCmd = " + downloadCmd);
@@ -81,8 +83,11 @@ public class YoutubeService {
         //调国内服务器接口，获取上传凭证
         String uploadCredentialsJson = HttpUtil.get(body.getString("getUploadCredentialsUrl"));
         JSONObject uploadCredentials = JSONObject.parseObject(uploadCredentialsJson);
-        //上传到对象存储
-        aliyunOssService.upload(file, uploadCredentials.getJSONObject("data"));
+
+        //判断provider，上传到对象存储
+        if (provider.equals(Provider.ALIYUN)) {
+            aliyunOssService.upload(file, uploadCredentials.getJSONObject("data"));
+        }
 
         log.info("回调通知国内服务器，文件上传完成：" + body.getString("fileUploadFinishCallbackUrl"));
         log.info(HttpUtil.get(body.getString("fileUploadFinishCallbackUrl")));

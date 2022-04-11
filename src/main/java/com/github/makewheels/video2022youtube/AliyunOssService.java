@@ -59,11 +59,7 @@ public class AliyunOssService {
             InputStream inputStream = null;
             try {
                 inputStream = new FileInputStream(file);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-            // 跳过已经上传的分片。
-            try {
+                // 跳过已经上传的分片。
                 inputStream.skip(startPosition);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -78,7 +74,9 @@ public class AliyunOssService {
             // 每个分片不需要按顺序上传，甚至可以在不同客户端上传，OSS会按照分片号排序组成完整的文件。
             UploadPartResult uploadPartResult = client.uploadPart(uploadPartRequest);
             // 每次上传分片之后，OSS的返回结果包含PartETag。PartETag将被保存在partETags中。
-            partETags.set(i, uploadPartResult.getPartETag());
+            PartETag partETag = uploadPartResult.getPartETag();
+            log.info("partNumber = " + partETag.getPartNumber() + ", partETag = " + partETag);
+            partETags.set(i, partETag);
 //            partETags.add(uploadPartResult.getPartETag());
         }
 
