@@ -94,6 +94,7 @@ public class YoutubeService {
         String missionId = body.getString("missionId");
         String youtubeVideoId = body.getString("youtubeVideoId");
         String uploadKey = body.getString("uploadKey");
+        String callbackUrl = body.getString("callbackUrl");
         //开始下载
         log.info("开始下载: youtubeVideoId = " + youtubeVideoId);
         new Thread(() -> download(missionId, youtubeVideoId, uploadKey)).start();
