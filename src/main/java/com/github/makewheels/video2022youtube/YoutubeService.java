@@ -51,10 +51,12 @@ public class YoutubeService {
      * @return
      */
     public String getFileExtension(String youtubeVideoId) {
+        log.info("获取后缀：youtubeVideoId = " + youtubeVideoId);
         String getFilenameCmd = "yt-dlp --get-filename -o %(ext)s " + "--restrict-filenames "
                 + youtubeVideoId;
         log.info("getFilenameCmd = " + getFilenameCmd);
         String result = RuntimeUtil.execForStr(getFilenameCmd);
+        log.info("得到了结果：" + result);
         if (result.endsWith("\n")) {
             result = result.replace("\n", "");
         }

@@ -10,7 +10,10 @@ import com.aliyun.oss.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,10 +41,15 @@ public class AliyunOssService {
 
         // 创建InitiateMultipartUploadRequest对象。
         InitiateMultipartUploadRequest request = new InitiateMultipartUploadRequest(bucket, key);
+        log.info("初始化分片");
+
         // 初始化分片。
         InitiateMultipartUploadResult uploadResult = client.initiateMultipartUpload(request);
+        log.info(JSON.toJSONString(uploadResult));
+
         // 返回uploadId，它是分片上传事件的唯一标识。您可以根据该uploadId发起相关的操作，例如取消分片上传、查询分片上传等。
         String uploadId = uploadResult.getUploadId();
+        log.info("uploadId = " + uploadId);
 
         // 每个分片的大小，用于计算文件有多少个分片。单位为字节。
         long partSize = 1024 * 1024L;
