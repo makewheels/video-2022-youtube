@@ -89,7 +89,6 @@ public class AliyunOssService {
             PartETag partETag = uploadPartResult.getPartETag();
             log.info("partNumber = " + partETag.getPartNumber() + ", partETag = " + JSON.toJSONString(partETag));
             partETags.set(i, partETag);
-//            partETags.add(uploadPartResult.getPartETag());
         }
 
         // 创建CompleteMultipartUploadRequest对象。
