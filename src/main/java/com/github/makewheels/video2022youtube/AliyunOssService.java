@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022youtube;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.oss.ClientBuilderConfiguration;
 import com.aliyun.oss.OSS;
@@ -79,7 +80,7 @@ public class AliyunOssService {
             UploadPartResult uploadPartResult = client.uploadPart(uploadPartRequest);
             // 每次上传分片之后，OSS的返回结果包含PartETag。PartETag将被保存在partETags中。
             PartETag partETag = uploadPartResult.getPartETag();
-            log.info("partNumber = " + partETag.getPartNumber() + ", partETag = " + partETag);
+            log.info("partNumber = " + partETag.getPartNumber() + ", partETag = " + JSON.toJSONString(partETag));
             partETags.set(i, partETag);
 //            partETags.add(uploadPartResult.getPartETag());
         }
