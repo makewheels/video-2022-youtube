@@ -59,7 +59,6 @@ public class AliyunOssService {
         if (fileLength % partSize != 0) {
             partCount++;
         }
-        System.out.println(partCount);
         // partETags是PartETag的集合。PartETag由分片的ETag和分片号组成。
         List<PartETag> partETags = new ArrayList<>(partCount);
         for (int i = 0; i < partCount; i++) {
