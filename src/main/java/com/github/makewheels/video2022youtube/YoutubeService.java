@@ -2,6 +2,7 @@ package com.github.makewheels.video2022youtube;
 
 import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.util.RuntimeUtil;
+import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.io.*;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
@@ -24,6 +26,9 @@ import java.util.List;
 public class YoutubeService {
     @Value("${youtube-work-dir}")
     private String youtubeWorkDir;
+
+    @Resource
+    private AliyunOssService aliyunOssService;
 
     public void executeAndPrint(String cmd) {
         try {
@@ -46,8 +51,8 @@ public class YoutubeService {
      * @return
      */
     public String getFileExtension(String youtubeVideoId) {
-        String getFilenameCmd = "yt-dlp --get-filename -o %(ext)s "
-                + "--restrict-filenames " + youtubeVideoId;
+        String getFilenameCmd = "yt-dlp --get-filename -o %(ext)s " + "--restrict-filenames "
+                + youtubeVideoId;
         log.info("getFilenameCmd = " + getFilenameCmd);
         String result = RuntimeUtil.execForStr(getFilenameCmd);
         if (result.endsWith("\n")) {
@@ -58,27 +63,33 @@ public class YoutubeService {
 
     /**
      * 下载
-     *
-     * @param missionId
-     * @param youtubeVideoId
-     * @param uploadKey
      */
-    private void download(String missionId, String youtubeVideoId, String uploadKey) {
+    private void download(JSONObject body) {
+        String missionId = body.getString("missionId");
+        String videoId = body.getString("videoId");
+        String youtubeVideoId = body.getString("youtubeVideoId");
+        String key = body.getString("key");
         //拿文件拓展名
-        String extension = FileNameUtil.extName(uploadKey);
+        String extension = FileNameUtil.extName(key);
         //下载视频
-        File webmFile = new File(youtubeWorkDir, missionId + "/" + youtubeVideoId + "." + extension);
-        log.info("webmFile = " + webmFile.getAbsolutePath());
-        String downloadCmd = "yt-dlp -S height:1080 -o " + webmFile.getAbsolutePath() + " " + youtubeVideoId;
+        File file = new File(youtubeWorkDir, missionId + "/" + youtubeVideoId + "." + extension);
+        log.info("webmFile = " + file.getAbsolutePath());
+        String downloadCmd = "yt-dlp -S height:1080 -o " + file.getAbsolutePath() + " " + youtubeVideoId;
         log.info("downloadCmd = " + downloadCmd);
         executeAndPrint(downloadCmd);
 
-        log.info("开始上传对象存储");
-        log.info(uploadKey);
+        //调国内服务器接口，获取上传凭证
+        String uploadCredentialsJson = HttpUtil.get(body.getString("getUploadCredentialsUrl"));
+        JSONObject uploadCredentials = JSONObject.parseObject(uploadCredentialsJson);
+        //上传到对象存储
+        aliyunOssService.upload(file, uploadCredentials.getJSONObject("data"));
 
-        log.info("上传对象存储完成");
+        log.info("回调通知国内服务器，文件上传完成：" + body.getString("fileUploadFinishCallbackUrl"));
+        log.info(HttpUtil.get(body.getString("fileUploadFinishCallbackUrl")));
 
-        log.info("通知国内服务器");
+        log.info("回调通知国内服务器，视频源文件上传完成：" + body.getString(
+                "videoOriginalFileUploadFinishCallbackUrl"));
+        log.info(HttpUtil.get(body.getString("videoOriginalFileUploadFinishCallbackUrl")));
 
         //删除本地文件
 //        webmFile.delete();
@@ -92,16 +103,17 @@ public class YoutubeService {
     public JSONObject submitMission(JSONObject body) {
         log.info("收到搬运任务：" + body.toJSONString());
         String missionId = body.getString("missionId");
+        String videoId = body.getString("videoId");
         String youtubeVideoId = body.getString("youtubeVideoId");
-        String uploadKey = body.getString("uploadKey");
-        String callbackUrl = body.getString("callbackUrl");
         //开始下载
         log.info("开始下载: youtubeVideoId = " + youtubeVideoId);
-        new Thread(() -> download(missionId, youtubeVideoId, uploadKey)).start();
+        new Thread(() -> download(body)).start();
         //提前先返回播放地址
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("missionId", missionId);
+        jsonObject.put("videoId", videoId);
         jsonObject.put("youtubeVideoId", youtubeVideoId);
+        jsonObject.put("message", "我是海外服务器，已收到搬运YouTube任务");
         return jsonObject;
     }
 
