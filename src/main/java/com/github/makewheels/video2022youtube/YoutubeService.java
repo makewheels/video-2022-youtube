@@ -101,8 +101,8 @@ public class YoutubeService {
         log.info(HttpUtil.get(body.getString("videoOriginalFileUploadFinishCallbackUrl")));
 
         //删除本地文件
-//        webmFile.delete();
-//        webmFile.getParentFile().delete();
+        file.delete();
+        file.getParentFile().delete();
 
     }
 

@@ -81,13 +81,15 @@ public class AliyunOssService {
             uploadPartRequest.setInputStream(inputStream);
             // 设置分片大小。除了最后一个分片没有大小限制，其他的分片最小为100 KB。
             uploadPartRequest.setPartSize(currentPartSize);
-            // 设置分片号。每一个上传的分片都有一个分片号，取值范围是1~10000，如果超出此范围，OSS将返回InvalidArgument错误码。
+            // 设置分片号。每一个上传的分片都有一个分片号，取值范围是1~10000，
+            // 如果超出此范围，OSS将返回InvalidArgument错误码。
             uploadPartRequest.setPartNumber(i + 1);
             // 每个分片不需要按顺序上传，甚至可以在不同客户端上传，OSS会按照分片号排序组成完整的文件。
             UploadPartResult uploadPartResult = client.uploadPart(uploadPartRequest);
             // 每次上传分片之后，OSS的返回结果包含PartETag。PartETag将被保存在partETags中。
             PartETag partETag = uploadPartResult.getPartETag();
-            log.info("partNumber = " + partETag.getPartNumber() + ", partETag = " + JSON.toJSONString(partETag));
+            log.info("正在上传，partNumber = " + partETag.getPartNumber() + ",size =  " + partETags.size()
+                    + ", partETag = " + JSON.toJSONString(partETag));
             partETags.set(i, partETag);
         }
 
@@ -101,9 +103,7 @@ public class AliyunOssService {
         // 完成分片上传。
         CompleteMultipartUploadResult completeMultipartUploadResult
                 = client.completeMultipartUpload(completeMultipartUploadRequest);
-        log.info(completeMultipartUploadResult.getETag());
-
-        log.info("上传对象存储完成");
+        log.info("上传对象存储完成 CompleteMultipartUploadResult = " + completeMultipartUploadResult.getETag());
     }
 
     public static void main(String[] args) {
