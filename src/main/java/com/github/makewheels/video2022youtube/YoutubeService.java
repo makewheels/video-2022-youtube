@@ -81,11 +81,11 @@ public class YoutubeService {
         String downloadCmd = "yt-dlp -S height:1080 -o " + file.getAbsolutePath() + " " + youtubeVideoId;
         log.info("downloadCmd = " + downloadCmd);
         executeAndPrint(downloadCmd);
-        log.info("下载完成");
+        log.info("下载完成 " + file.getName());
 
         //调国内服务器接口，获取上传凭证
         String uploadCredentialsJson = HttpUtil.get(body.getString("getUploadCredentialsUrl"));
-        log.info("上传凭证：" + uploadCredentialsJson);
+        log.info("获取到上传凭证：" + uploadCredentialsJson);
         JSONObject uploadCredentials = JSONObject.parseObject(uploadCredentialsJson);
 
         //判断provider，上传到对象存储
