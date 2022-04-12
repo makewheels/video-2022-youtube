@@ -64,6 +64,7 @@ public class AliyunOssService {
         for (int i = 0; i < partCount; i++) {
             partETags.add(null);
         }
+        int size = partETags.size();
         // 遍历分片上传。
         for (int i = 0; i < partCount; i++) {
             long startPosition = i * partSize;
@@ -88,7 +89,11 @@ public class AliyunOssService {
             UploadPartResult uploadPartResult = client.uploadPart(uploadPartRequest);
             // 每次上传分片之后，OSS的返回结果包含PartETag。PartETag将被保存在partETags中。
             PartETag partETag = uploadPartResult.getPartETag();
-            log.info("正在上传，partNumber = " + partETag.getPartNumber() + ",size =  " + partETags.size()
+            int partNumber = partETag.getPartNumber();
+            //百分比进度
+            String percent = String.format("%.2f", partNumber * 100.0 / size);
+            log.info("正在上传 " + percent + "% partNumber = "
+                    + partNumber + ", size =  " + size
                     + ", partETag = " + JSON.toJSONString(partETag));
             partETags.set(i, partETag);
         }
