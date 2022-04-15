@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022youtube;
 
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.util.RuntimeUtil;
 import cn.hutool.http.HttpUtil;
@@ -82,6 +83,26 @@ public class YoutubeService {
         log.info("downloadCmd = " + downloadCmd);
         executeAndPrint(downloadCmd);
         log.info("下载完成 " + file.getName());
+
+        //2022年4月15日12:35:43
+        //这里发现个问题，yt-dlp获取后缀永远是webm，但是实际文件后缀可能是mkv，这会导致上传的时候找不到文件
+        //问题具体如下：
+        //
+        //有问题的下载命令：
+        //yt-dlp -S height:1080 -o /root/youtube-work-dir/jV5tCkJGG-4BWPEWH9g-6-6258f1671273947edf88553c/
+        // 1otF0N6surM.webm 1otF0N6surM
+        //
+        //海外服务器文件如下：
+        //[root@VM6oN0mVD94k jV5tCkJGG-4BWPEWH9g-6-6258f1671273947edf88553c]# ll
+        //总用量 413020
+        //-rw-r--r-- 1 root root 422932253 3月   5 04:17 1otF0N6surM.mkv
+        //
+        //咋办呢，本质上是，对象存储上传后缀不对，但是先不解决后缀不对的问题，先让他能正常上传，
+        // 这里先判断一下，file存不存在，如果存在继续上传对象存储，
+        //如果file.exist()==false则把file改为mkv文件，具体代码就是该目录第一个文件
+        if (!file.exists()) {
+            file = FileUtil.loopFiles(file.getParentFile()).get(0);
+        }
 
         //调国内服务器接口，获取上传凭证
         String uploadCredentialsJson = HttpUtil.get(body.getString("getUploadCredentialsUrl"));
