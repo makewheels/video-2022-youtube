@@ -112,7 +112,7 @@ public class YoutubeService {
         JSONObject uploadCredentials = JSONObject.parseObject(uploadCredentialsJson);
 
         //判断provider，上传到对象存储
-        if (provider.equals(Provider.ALIYUN)) {
+        if (provider.startsWith(S3Provider.ALIYUN)) {
             aliyunOssService.upload(file, uploadCredentials.getJSONObject("data"));
         }
 
