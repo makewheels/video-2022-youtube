@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,7 +72,7 @@ public class AliyunOssService {
             long currentPartSize = (i + 1 == partCount) ? (fileLength - startPosition) : partSize;
             InputStream inputStream = null;
             try {
-                inputStream = new FileInputStream(file);
+                inputStream = Files.newInputStream(file.toPath());
                 // 跳过已经上传的分片。
                 inputStream.skip(startPosition);
             } catch (IOException e) {
@@ -93,7 +94,7 @@ public class AliyunOssService {
             //百分比进度
             String percent = String.format("%.2f", partNumber * 100.0 / size);
             log.info("正在上传 " + percent + "% partNumber = "
-                    + partNumber + ", size =  " + size
+                    + partNumber + ", partAmount =  " + size
                     + ", partETag = " + JSON.toJSONString(partETag));
             partETags.set(i, partETag);
         }
@@ -109,25 +110,6 @@ public class AliyunOssService {
         CompleteMultipartUploadResult completeMultipartUploadResult
                 = client.completeMultipartUpload(completeMultipartUploadRequest);
         log.info("上传对象存储完成 CompleteMultipartUploadResult = " + completeMultipartUploadResult.getETag());
-    }
-
-    public static void main(String[] args) {
-        JSONObject jsonObject = JSONObject.parseObject("{\"bucket\":\"video-2022-dev\",\"accessKeyId\":" +
-                "\"STS.NStCwvm5iTDtqNc2M5hb84GQA\",\"endpoint\":\"oss-cn-beijing.aliyuncs.com\"" +
-                ",\"secretKey\":\"3CpvSmDCMU3dW57eHAe7RhKdGfET6ALY9EyQywnv8HkT\",\"provider\":" +
-                "\"ALIYUN\",\"sessionToken\":\"CAISogJ1q6Ft5B2yfSjIr5DBCM3CgOpI44afc2jS1k1gZO0U24L" +
-                "6ozz2IH9LeHVhB+4WsPQ0lW1U6vwdlplpTJtIfkHfdsp36LJe9A7kbtud4pe44OwO0Mb7RTnDVU+qjZ" +
-                "aPaujyQo2GcPr8OgicIovnaVKiJ1uYRFWAHcCjq/wON6Y6PGSRaT5BG60lRG9Lo9MbMn38LOukNgWQ" +
-                "7EPbEEtvvHgX6wo9k9PdpPeR8R3Dllb35/YIroDqWPieYtJrIY10XqXevoU0VNKYjncAtEgWrvcu3PMY" +
-                "p2qXhLzHXQkNuSfhGvHP79hiIDV+YqUHAKNepJD+76Yn5bCPxtqpm0gdZrAID3iFG5rb2szAFaau" +
-                "Lc18a7f3NnOIiIjVbIk/RvX84JKDXhqAAU2V/apWGLZbEt7z4/MGKgivHVUSi7zOfhSipmeGvgf+" +
-                "+2JEkYz/4y53geItQZ3QcQRUpz3s1M6yrF5IyFHugG0yYAC+sKMTOk+yvQoJGSWZVCCDEXcJrCk6NE" +
-                "zyKwJ8ODTVN/4UVfaAggujuN1pipd14AFhdNhhRpb9Kgv1UPPm\",\"expiration\":\"" +
-                "2022-04-11T10:15:36Z\",\"key\":\"videos/6231de9a5bffa00422da71ce/" +
-                "6253d4a3e6181b5c6c3d8cfb/original/6253d4a3e6181b5c6c3d8cfb.webm\"}");
-
-        new AliyunOssService().upload(new File("C:\\Users\\thedoflin\\Downloads\\test.mp4"),
-                jsonObject);
     }
 
 }
