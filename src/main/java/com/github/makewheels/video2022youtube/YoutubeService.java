@@ -79,7 +79,7 @@ public class YoutubeService {
         File file = new File(youtubeWorkDir, missionId + "-" + videoId + "/"
                 + youtubeVideoId + "." + extension);
         log.info("webmFile = " + file.getAbsolutePath());
-        String downloadCmd = "yt-dlp -S \"vcodec:h264 acodec:aac\" -o " + file.getAbsolutePath() + " " + youtubeVideoId;
+        String downloadCmd = "yt-dlp -S \"vcodec:h264,acodec:aac\" -o " + file.getAbsolutePath() + " " + youtubeVideoId;
         log.info("downloadCmd = " + downloadCmd);
         executeAndPrint(downloadCmd);
         log.info("下载完成 " + file.getName());
