@@ -104,6 +104,8 @@ public class YoutubeService {
             file = FileUtil.loopFiles(file.getParentFile()).get(0);
         }
 
+        log.info("待上传的本地文件：" + file.getAbsolutePath());
+
         //调国内服务器接口，获取上传凭证
         String uploadCredentialsJson = HttpUtil.get(body.getString("getUploadCredentialsUrl"));
         log.info("获取到上传凭证：" + uploadCredentialsJson);
