@@ -1,7 +1,6 @@
 package com.github.makewheels.video2022youtube;
 
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.util.RuntimeUtil;
 import cn.hutool.http.HttpUtil;
@@ -66,9 +65,32 @@ public class YoutubeService {
     }
 
     /**
+     * 获取视频信息
+     *
+     * @param youtubeVideoId
+     * @return
+     */
+    public JSONObject getVideoInfo(String youtubeVideoId) {
+        List<String> idList = new ArrayList<>();
+        idList.add(youtubeVideoId);
+        YouTube youTube = getService();
+        if (youTube == null) return null;
+        try {
+            YouTube.Videos.List request = youTube.videos()
+                    .list(Lists.newArrayList("snippet", "contentDetails", "statistics"))
+                    .setId(idList).setKey("AIzaSyA4x7iV1uzQqWnoiADcHikWshx01tvZEtg");
+            VideoListResponse response = request.execute();
+            return JSONObject.parseObject(JSON.toJSONString(response.getItems().get(0)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
      * 下载
      */
-    private void download(JSONObject body) {
+    private void downloadYoutubeVideo(JSONObject body) {
         String missionId = body.getString("missionId");
         String videoId = body.getString("videoId");
         String youtubeVideoId = body.getString("youtubeVideoId");
@@ -139,7 +161,7 @@ public class YoutubeService {
         log.info("回调通知国内服务器，文件上传完成：" + fileUploadFinishCallbackUrl);
         log.info(HttpUtil.get(fileUploadFinishCallbackUrl));
 
-        log.info("回调通知国内服务器，视频源文件上传完成：" + businessUploadFinishCallbackUrl);
+        log.info("回调通知国内服务器，业务源文件上传完成：" + businessUploadFinishCallbackUrl);
         log.info(HttpUtil.get(businessUploadFinishCallbackUrl));
     }
 
@@ -153,7 +175,7 @@ public class YoutubeService {
         String youtubeVideoId = body.getString("youtubeVideoId");
         //开始下载
         log.info("开始下载: youtubeVideoId = " + youtubeVideoId);
-        new Thread(() -> download(body)).start();
+        new Thread(() -> downloadYoutubeVideo(body)).start();
         //提前先返回播放地址
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("missionId", missionId);
@@ -177,28 +199,6 @@ public class YoutubeService {
                 .build();
     }
 
-    /**
-     * 获取视频信息
-     *
-     * @param youtubeVideoId
-     * @return
-     */
-    public JSONObject getVideoInfo(String youtubeVideoId) {
-        List<String> idList = new ArrayList<>();
-        idList.add(youtubeVideoId);
-        YouTube youTube = getService();
-        if (youTube == null) return null;
-        try {
-            YouTube.Videos.List request = youTube.videos()
-                    .list(Lists.newArrayList("snippet", "contentDetails", "statistics"))
-                    .setId(idList).setKey("AIzaSyA4x7iV1uzQqWnoiADcHikWshx01tvZEtg");
-            VideoListResponse response = request.execute();
-            return JSONObject.parseObject(JSON.toJSONString(response.getItems().get(0)));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     /**
      * 根据url搬运文件

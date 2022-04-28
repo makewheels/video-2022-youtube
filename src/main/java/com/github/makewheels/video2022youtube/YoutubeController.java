@@ -19,15 +19,17 @@ public class YoutubeController {
         return response;
     }
 
-    @PostMapping("transferVideo")
-    public JSONObject transferVideo(@RequestBody JSONObject body) {
-        return youtubeService.transferVideo(body);
-    }
 
     @GetMapping("getVideoInfo")
     public JSONObject getVideoInfo(@RequestParam String youtubeVideoId) {
         return youtubeService.getVideoInfo(youtubeVideoId);
     }
+
+    @PostMapping("transferVideo")
+    public JSONObject transferVideo(@RequestBody JSONObject body) {
+        return youtubeService.transferVideo(body);
+    }
+
 
     @PostMapping("transferFile")
     public JSONObject transferFile(@RequestBody JSONObject body) {
