@@ -146,7 +146,7 @@ public class YoutubeService {
     /**
      * 提交搬运任务
      */
-    public JSONObject submitMission(JSONObject body) {
+    public JSONObject transferVideo(JSONObject body) {
         log.info("收到搬运任务：" + body.toJSONString());
         String missionId = body.getString("missionId");
         String videoId = body.getString("videoId");

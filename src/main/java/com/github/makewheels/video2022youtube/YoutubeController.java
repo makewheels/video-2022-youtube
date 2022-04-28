@@ -19,9 +19,9 @@ public class YoutubeController {
         return response;
     }
 
-    @PostMapping("submitMission")
-    public JSONObject submitMission(@RequestBody JSONObject body) {
-        return youtubeService.submitMission(body);
+    @PostMapping("transferVideo")
+    public JSONObject transferVideo(@RequestBody JSONObject body) {
+        return youtubeService.transferVideo(body);
     }
 
     @GetMapping("getVideoInfo")
