@@ -129,7 +129,7 @@ public class YoutubeService {
         uploadAndCallback(file, body.getString("provider"),
                 body.getString("getUploadCredentialsUrl"),
                 body.getString("fileUploadFinishCallbackUrl"),
-                body.getString("videoOriginalFileUploadFinishCallbackUrl")
+                body.getString("businessUploadFinishCallbackUrl")
         );
 
     }
