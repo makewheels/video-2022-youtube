@@ -210,15 +210,19 @@ public class YoutubeService {
     public JSONObject transferFile(JSONObject body) {
         String key = body.getString("key");
         String missionId = body.getString("missionId");
-        //下载
-        File file = new File(youtubeWorkDir, "download/" + missionId + "/" + FileNameUtil.getName(key));
-        HttpUtil.downloadFile(body.getString("downloadUrl"), file);
+        //开子线程进行任务，先给前端返回
+        new Thread(() -> {
+            //下载
+            File file = new File(youtubeWorkDir, "download/" + missionId + "/" + FileNameUtil.getName(key));
+            HttpUtil.downloadFile(body.getString("downloadUrl"), file);
 
-        uploadAndCallback(file, body.getString("provider"),
-                body.getString("getUploadCredentialsUrl"),
-                body.getString("fileUploadFinishCallbackUrl"),
-                body.getString("businessUploadFinishCallbackUrl")
-        );
+            uploadAndCallback(file, body.getString("provider"),
+                    body.getString("getUploadCredentialsUrl"),
+                    body.getString("fileUploadFinishCallbackUrl"),
+                    body.getString("businessUploadFinishCallbackUrl")
+            );
+        }).start();
+
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("missionId", missionId);
         jsonObject.put("fileId", body.getString("fileId"));
