@@ -28,4 +28,10 @@ public class YoutubeController {
     public JSONObject getVideoInfo(@RequestParam String youtubeVideoId) {
         return youtubeService.getVideoInfo(youtubeVideoId);
     }
+
+    @PostMapping("transferFile")
+    public JSONObject transferFile(@RequestBody JSONObject body) {
+        return youtubeService.transferFile(body);
+    }
+
 }

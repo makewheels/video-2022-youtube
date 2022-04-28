@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022youtube;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.util.RuntimeUtil;
 import cn.hutool.http.HttpUtil;
@@ -69,14 +70,13 @@ public class YoutubeService {
      */
     private void download(JSONObject body) {
         String missionId = body.getString("missionId");
-        String provider = body.getString("provider");
         String videoId = body.getString("videoId");
         String youtubeVideoId = body.getString("youtubeVideoId");
         String key = body.getString("key");
         //拿文件拓展名
         String extension = FileNameUtil.extName(key);
         //下载视频
-        File file = new File(youtubeWorkDir, missionId + "-" + videoId + "/"
+        File file = new File(youtubeWorkDir, "transfer/" + missionId + "-" + videoId + "/"
                 + youtubeVideoId + "." + extension);
         log.info("webmFile = " + file.getAbsolutePath());
         String downloadCmd = "yt-dlp -S vcodec:h264,acodec:aac,res:1080 -o "
@@ -104,11 +104,30 @@ public class YoutubeService {
         if (!file.exists()) {
             file = FileUtil.loopFiles(file.getParentFile()).get(0);
         }
+        uploadAndCallback(file, body.getString("provider"),
+                body.getString("getUploadCredentialsUrl"),
+                body.getString("fileUploadFinishCallbackUrl"),
+                body.getString("videoOriginalFileUploadFinishCallbackUrl")
+        );
 
+    }
+
+    /**
+     * 上传对象存储，并且回调
+     *
+     * @param file
+     * @param provider
+     * @param getUploadCredentialsUrl
+     * @param fileUploadFinishCallbackUrl
+     * @param businessUploadFinishCallbackUrl
+     */
+    private void uploadAndCallback(
+            File file, String provider, String getUploadCredentialsUrl,
+            String fileUploadFinishCallbackUrl, String businessUploadFinishCallbackUrl) {
         log.info("待上传的本地文件：" + file.getAbsolutePath());
 
         //调国内服务器接口，获取上传凭证
-        String uploadCredentialsJson = HttpUtil.get(body.getString("getUploadCredentialsUrl"));
+        String uploadCredentialsJson = HttpUtil.get(getUploadCredentialsUrl);
         log.info("获取到上传凭证：" + uploadCredentialsJson);
         JSONObject uploadCredentials = JSONObject.parseObject(uploadCredentialsJson);
 
@@ -117,17 +136,11 @@ public class YoutubeService {
             aliyunOssService.upload(file, uploadCredentials.getJSONObject("data"));
         }
 
-        log.info("回调通知国内服务器，文件上传完成：" + body.getString("fileUploadFinishCallbackUrl"));
-        log.info(HttpUtil.get(body.getString("fileUploadFinishCallbackUrl")));
+        log.info("回调通知国内服务器，文件上传完成：" + fileUploadFinishCallbackUrl);
+        log.info(HttpUtil.get(fileUploadFinishCallbackUrl));
 
-        log.info("回调通知国内服务器，视频源文件上传完成：" + body.getString(
-                "videoOriginalFileUploadFinishCallbackUrl"));
-        log.info(HttpUtil.get(body.getString("videoOriginalFileUploadFinishCallbackUrl")));
-
-        //删除本地文件
-        file.delete();
-        file.getParentFile().delete();
-
+        log.info("回调通知国内服务器，视频源文件上传完成：" + businessUploadFinishCallbackUrl);
+        log.info(HttpUtil.get(businessUploadFinishCallbackUrl));
     }
 
     /**
@@ -145,6 +158,7 @@ public class YoutubeService {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("missionId", missionId);
         jsonObject.put("videoId", videoId);
+        jsonObject.put("fileId", body.getString("fileId"));
         jsonObject.put("youtubeVideoId", youtubeVideoId);
         jsonObject.put("message", "我是海外服务器，已收到搬运YouTube任务");
         return jsonObject;
@@ -184,5 +198,31 @@ public class YoutubeService {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * 根据url搬运文件
+     * 下载到本地，上传到国内对象存储
+     *
+     * @param body
+     * @return
+     */
+    public JSONObject transferFile(JSONObject body) {
+        String key = body.getString("key");
+        String missionId = body.getString("missionId");
+        //下载
+        File file = new File(youtubeWorkDir, "download/" + missionId + "/" + FileNameUtil.getName(key));
+        HttpUtil.downloadFile(body.getString("downloadUrl"), file);
+
+        uploadAndCallback(file, body.getString("provider"),
+                body.getString("getUploadCredentialsUrl"),
+                body.getString("fileUploadFinishCallbackUrl"),
+                body.getString("businessUploadFinishCallbackUrl")
+        );
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("missionId", missionId);
+        jsonObject.put("fileId", body.getString("fileId"));
+        jsonObject.put("message", "我是海外服务器，已收到下载文件任务");
+        return jsonObject;
     }
 }
