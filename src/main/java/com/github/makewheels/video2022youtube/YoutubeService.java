@@ -101,7 +101,9 @@ public class YoutubeService {
         File file = new File(youtubeWorkDir, "transfer/" + missionId + "-" + videoId + "/"
                 + youtubeVideoId + "." + extension);
         log.info("webmFile = " + file.getAbsolutePath());
-        String downloadCmd = "yt-dlp -S vcodec:h264,acodec:aac,res:1080 -o "
+        String downloadCmd =
+//                "yt-dlp -S vcodec:h264,acodec:aac,res:1080 -o "
+                "yt-dlp -S res:1080 -o "
                 + file.getAbsolutePath() + " " + youtubeVideoId;
         log.info("downloadCmd = " + downloadCmd);
         executeAndPrint(downloadCmd);
