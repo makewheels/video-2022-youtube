@@ -167,7 +167,7 @@ public class YoutubeService {
         log.info(HttpUtil.get(businessUploadFinishCallbackUrl));
 
         log.info("删除本地文件夹：" + file.getParentFile().getAbsolutePath());
-        log.info(file.getParentFile().delete() + "");
+        log.info(FileUtil.del(file.getParentFile()) + "");
     }
 
     /**
