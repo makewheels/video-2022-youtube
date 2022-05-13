@@ -104,7 +104,7 @@ public class YoutubeService {
         String downloadCmd =
 //                "yt-dlp -S vcodec:h264,acodec:aac,res:1080 -o "
                 "yt-dlp -S res:1080 -o "
-                + file.getAbsolutePath() + " " + youtubeVideoId;
+                        + file.getAbsolutePath() + " " + youtubeVideoId;
         log.info("downloadCmd = " + downloadCmd);
         executeAndPrint(downloadCmd);
         log.info("下载完成 " + file.getName());
@@ -165,6 +165,9 @@ public class YoutubeService {
 
         log.info("回调通知国内服务器，业务源文件上传完成：" + businessUploadFinishCallbackUrl);
         log.info(HttpUtil.get(businessUploadFinishCallbackUrl));
+
+        log.info("删除本地文件夹：" + file.getParentFile().getAbsolutePath());
+        log.info(file.getParentFile().delete() + "");
     }
 
     /**
