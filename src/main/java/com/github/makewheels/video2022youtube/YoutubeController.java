@@ -19,7 +19,6 @@ public class YoutubeController {
         return response;
     }
 
-
     @GetMapping("getVideoInfo")
     public JSONObject getVideoInfo(@RequestParam String youtubeVideoId) {
         return youtubeService.getVideoInfo(youtubeVideoId);

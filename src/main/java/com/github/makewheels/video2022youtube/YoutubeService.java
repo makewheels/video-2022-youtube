@@ -103,8 +103,8 @@ public class YoutubeService {
         log.info("webmFile = " + file.getAbsolutePath());
         String downloadCmd =
 //                "yt-dlp -S vcodec:h264,acodec:aac,res:1080 -o "
-                "yt-dlp -S res:1080 -o "
-                        + file.getAbsolutePath() + " " + youtubeVideoId;
+//                "yt-dlp -S res:1080 -o "
+                "yt-dlp -o " + file.getAbsolutePath() + " " + youtubeVideoId;
         log.info("downloadCmd = " + downloadCmd);
         executeAndPrint(downloadCmd);
         log.info("下载完成 " + file.getName());
